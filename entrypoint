@@ -1,0 +1,14 @@
+#!/bin/sh
+
+test -z "${REDIS_REQUIREPASS}" || {
+  sed -i -e "s%^# requirepass .*%requirepass ${REDIS_REQUIREPASS}%" /etc/redis.conf
+}
+
+sed -i \
+  -e 's%^bind \(.*\)%# bind \1%' \
+  -e 's%^logfile .*%logfile /dev/stdout%' \
+  -e 's%^save \(.*\)%# save \1%' \
+  -e 's%^always-show-logo .*%always-show-logo yes%' \
+  /etc/redis.conf
+
+exec /usr/bin/redis-server /etc/redis.conf
