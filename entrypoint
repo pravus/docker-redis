@@ -1,0 +1,27 @@
+#!/bin/sh
+
+REDIS_CONF=/etc/redis.conf
+
+# configure authentication
+if test -n "${REDIS_REQUIREPASS}"; then
+  _redis_requirepass=$(echo "${REDIS_REQUIREPASS}" | sed 's/@/\\@/g')
+  sed -i "s@^# requirepass foobared@requirepass ${_redis_requirepass}@" "${REDIS_CONF}"
+else
+  echo 'WARNING: $REDIS_REQUIREPASS is unset; this probably will not work.'
+fi
+
+# configure interface binding
+if test -n "${REDIS_BIND}"; then
+  sed -i "s@^bind 127.0.0.1 -::1@bind ${REDIS_BIND}@" "${REDIS_CONF}"
+else
+  sed -i 's@^bind 127.0.0.1 -::1@# bind 127.0.0.1 -::1@' "${REDIS_CONF}"
+fi
+
+# disable logging to a file
+sed -i 's@^logfile \(.*\)@# logfile \1@' "${REDIS_CONF}"
+
+# ascii art uber alles
+sed -i 's@^always-show-logo no@always-show-logo yes@' "${REDIS_CONF}"
+
+# let's go
+/usr/bin/redis-server "${REDIS_CONF}"
